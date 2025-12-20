@@ -1,103 +1,312 @@
 # 🛡️ AWS Account Hygiene & Security Report
 
-| License | Python | UI | Cloud/Security |
-|---------|--------|----|----------------|
-| MIT     | 3.10+  | CLI (reports in HTML/MD/JSON) | AWS hygiene & security checks (boto3) |
+> **Schnelle Sicherheits- und Hygiene-Checks für AWS-Accounts – ohne Compliance-Overhead.**
 
-Python CLI that scans an AWS account for common hygiene and security issues and produces JSON, Markdown, and HTML reports with severity scoring and remediation hints. Designed to run locally or in CI with clear exit codes. The goal is fast visibility into high-impact misconfigurations without requiring full compliance tooling.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-## 🔍 What it does
-- **IAM**: users without MFA; stale/unused access keys; broad/admin-style permissions (heuristic)
-- **S3**: account-level Public Access Block; bucket-level public exposure signals
-- **EC2**: security groups open to the world on admin ports (22/3389)
-- **CloudFront**: viewer protocol / HTTPS enforcement
-- **Tagging**: missing required tags (for example Owner, Env)
-- **Multi-region** support (`--regions <list>` or `--regions all`)
+Python-CLI, die ein AWS-Konto auf gängige Hygiene- und Sicherheitsprobleme scannt und JSON-, Markdown- und HTML-Reports mit Severity-Scoring und Remediation-Hinweisen erstellt. Läuft lokal oder in CI mit klaren Exit-Codes. Ziel: schnelle Sichtbarkeit auf High-Impact-Fehlkonfigurationen ohne Full-Compliance-Tooling.
 
-## 🖼️ Example output
-Generated against a real AWS account (identifiers anonymized).
+---
 
-![AWS Audit HTML Report](docs/screenshots/aws-audit-html-report.png)
+## 📑 Inhaltsverzeichnis
+
+- [Features](#-features)
+- [Example Output](#-example-output)
+- [Quickstart](#-quickstart)
+- [CLI Reference](#-cli-reference)
+- [Exit Codes](#-exit-codes)
+- [CI/CD Integration](#-cicd-integration)
+- [Output Examples](#-output-examples)
+- [Required Permissions](#-required-permissions)
+- [Development](#-development)
+- [Contributing](#-contributing)
+- [Non-Goals](#-non-goals)
+- [Roadmap](#-roadmap)
+- [License](#-license)
+
+---
+
+## 🔍 Features
+
+| Bereich          | Checks                                                                       |
+| ---------------- | ---------------------------------------------------------------------------- |
+| **IAM**          | User ohne MFA, veraltete/ungenutzte Access Keys, breite Admin-Berechtigungen |
+| **S3**           | Account-Level Public Access Block, Bucket-Level Public Exposure              |
+| **EC2**          | Security Groups offen auf Admin-Ports (22/3389)                              |
+| **CloudFront**   | Viewer Protocol / HTTPS Enforcement                                          |
+| **Tagging**      | Fehlende Required Tags (z.B. `Owner`, `Env`)                                 |
+| **Multi-Region** | `--regions <list>` oder `--regions all`                                      |
+
+---
+
+## 🖼️ Example Output
+
+![AWS Audit HTML Report](docs/screenshots/report-example.png)
+
+_Generiert gegen ein echtes AWS-Konto (Identifier anonymisiert)._
+
+---
 
 ## 🚀 Quickstart
 
-### 📋 Requirements
+### Voraussetzungen
+
 - Python 3.10+
-- AWS CLI configured (SSO or access keys)
-- Read permissions for the services you want to scan
+- AWS CLI konfiguriert (SSO oder Access Keys)
+- Read-Permissions für die zu scannenden Services
 
-### 🛠️ Install
+### Installation
+
 ```bash
+# Virtual Environment erstellen
 python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# macOS/Linux
-source .venv/bin/activate
 
+# Aktivieren
+source .venv/bin/activate      # macOS/Linux
+.venv\Scripts\activate         # Windows
+
+# Installieren
 pip install -e ".[dev]"
 ```
 
-### ▶️ Run
+### Ausführen
+
 ```bash
-python -m aws_audit --profile <PROFILE> --region eu-central-1 --format json --format md --format html
+python -m aws_audit \
+  --profile <PROFILE> \
+  --region eu-central-1 \
+  --format json \
+  --format md \
+  --format html
 ```
 
-Outputs are written to `out/` as:
+Outputs werden nach `out/` geschrieben:
+
 - `out/aws_audit_<account>.json`
 - `out/aws_audit_<account>.md`
 - `out/aws_audit_<account>.html`
 
-### 🔐 Authentication
-Supports the standard AWS credential chain:
-- AWS SSO profiles (recommended)
-- Access keys
-- Environment variables
-- Instance/role credentials (for example EC2)
+### Authentifizierung
 
-SSO example:
-```bash
-aws sso login --profile cann65-adminaccess
-python -m aws_audit --profile cann65-adminaccess --region eu-central-1 --format html
+Das Tool unterstützt die Standard-AWS-Credential-Chain:
+
+| Methode                   | Beispiel                                     |
+| ------------------------- | -------------------------------------------- |
+| AWS SSO (empfohlen)       | `aws sso login --profile my-profile`         |
+| Access Keys               | `~/.aws/credentials`                         |
+| Environment Variables     | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` |
+| Instance/Role Credentials | EC2, ECS, Lambda                             |
+
+---
+
+## ⚙️ CLI Reference
+
+| Flag                         | Default  | Beschreibung                                                 |
+| ---------------------------- | -------- | ------------------------------------------------------------ |
+| `--profile`                  | -        | AWS CLI Profil                                               |
+| `--region`                   | -        | Primäre Region                                               |
+| `--regions`                  | -        | Mehrere Regionen: `eu-central-1,eu-west-1` oder `all`        |
+| `--format`                   | `json`   | Output-Format(e): `json`, `md`, `html` (mehrfach verwendbar) |
+| `--fail-on`                  | `MEDIUM` | Severity-Schwelle für Exit Code 2                            |
+| `--max-findings`             | -        | Max. Findings bevor Exit Code 2                              |
+| `--no-exit-on-findings`      | `false`  | Immer Exit 0                                                 |
+| `--access-key-max-age-days`  | `90`     | Max. Alter für Access Keys                                   |
+| `--access-key-inactive-days` | `30`     | Inaktivitäts-Schwelle für Keys                               |
+
+---
+
+## ✅ Exit Codes
+
+| Code | Bedeutung                                                    |
+| ---- | ------------------------------------------------------------ |
+| `0`  | Erfolg oder Findings unterhalb der Schwelle                  |
+| `2`  | Finding(s) ≥ `--fail-on` oder `--max-findings` überschritten |
+
+---
+
+## 🔄 CI/CD Integration
+
+### GitHub Actions Beispiel
+
+```yaml
+name: AWS Security Audit
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Jeden Montag um 6:00 UTC
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -e .
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/AuditRole
+          aws-region: eu-central-1
+
+      - name: Run audit
+        run: |
+          python -m aws_audit \
+            --regions all \
+            --format json \
+            --format html \
+            --fail-on HIGH
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit-report
+          path: out/
 ```
 
-### ⚙️ CLI flags worth knowing
-- `--regions eu-central-1,eu-west-1` or `--regions all`
-- `--fail-on MEDIUM` (default) sets the severity threshold for exit code 2
-- `--max-findings 50` fails if total findings exceed N
-- `--no-exit-on-findings` always exits 0
-- `--access-key-max-age-days` / `--access-key-inactive-days` to tune IAM key checks
+---
 
-### ✅ Exit codes
-- `0` success or findings below threshold
-- `2` any finding at/above `--fail-on`, or total findings exceed `--max-findings`
+## 📊 Output Examples
+
+### JSON Finding
+
+```json
+{
+  "id": "iam-001",
+  "title": "IAM User without MFA",
+  "severity": "HIGH",
+  "resource": "arn:aws:iam::123456789012:user/developer",
+  "region": "global",
+  "description": "User 'developer' has console access but no MFA device configured.",
+  "remediation": "Enable MFA for this user via IAM Console or CLI.",
+  "documentation": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa.html"
+}
+```
+
+### Summary
+
+```json
+{
+  "account_id": "123456789012",
+  "scan_time": "2025-01-15T10:30:00Z",
+  "regions_scanned": ["eu-central-1", "eu-west-1"],
+  "summary": {
+    "CRITICAL": 0,
+    "HIGH": 3,
+    "MEDIUM": 7,
+    "LOW": 12,
+    "INFO": 5
+  }
+}
+```
+
+---
+
+## 🔐 Required Permissions
+
+Empfohlene Minimal-Berechtigungen (read-only):
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:List*",
+        "iam:Get*",
+        "s3:GetAccountPublicAccessBlock",
+        "s3:GetBucketPolicy",
+        "s3:GetBucketPublicAccessBlock",
+        "s3:ListAllMyBuckets",
+        "ec2:DescribeSecurityGroups",
+        "cloudfront:ListDistributions",
+        "cloudfront:GetDistribution",
+        "tag:GetResources",
+        "sts:GetCallerIdentity"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+> **Hinweis:** Fehlende Berechtigungen werden als übersprungene Checks mit Warnings gemeldet.
+
+---
 
 ## 🧪 Development
-- Lint/format: `ruff check . --fix && ruff format . && black .`
-- Tests: `pytest -q`
 
-## 🔎 Permissions (read-only)
-Recommended minimums: IAM list/get, S3 list/get (account PAB, bucket policy/PAB), EC2 describe security groups, CloudFront list distributions, Tagging API get resources, STS get caller identity. Missing permissions are reported as skipped checks with warnings.
+```bash
+# Lint & Format
+ruff check . --fix
+ruff format .
+black .
 
-## 🚫 Non-goals
-- This is not a full compliance or policy-as-code framework.
-- It does not make changes to AWS resources (read-only by design).
-- It focuses on common, high-signal misconfigurations.
+# Tests
+pytest -q
 
-## 🧯 Repo hygiene for public sharing
-- Do not commit real reports in `out/` (they contain account details).
-- Keep secrets/credentials out of the repo (`.env`, `~/.aws/*`).
-- Use anonymized screenshots for examples.
+# Type Checking (optional)
+mypy aws_audit/
+```
 
-## 📌 Status / roadmap
-- Current: IAM/S3/EC2/CloudFront/Tagging checks, multi-region, severity-based exit codes, JSON/MD/HTML output.
-- Next ideas: masking mode (`--mask`) to anonymize IDs; richer IAM policy analysis; root MFA check.
+---
 
-## 🎯 Why this project
-Built as a practical security-focused Python project to demonstrate:
-- AWS API usage with boto3
-- CLI design and configuration handling
-- Structured findings and reporting
-- CI-friendly tooling with deterministic exit codes
+## 🤝 Contributing
+
+Beiträge sind willkommen! So kannst du mitmachen:
+
+1. **Fork** das Repository
+2. **Branch** erstellen: `git checkout -b feature/mein-feature`
+3. **Änderungen** committen: `git commit -m 'Add: Mein neues Feature'`
+4. **Push** zum Branch: `git push origin feature/mein-feature`
+5. **Pull Request** öffnen
+
+### Guidelines
+
+- Code muss `ruff` und `black` Checks bestehen
+- Neue Features sollten Tests haben
+- Dokumentation aktualisieren wenn nötig
+
+---
+
+## 🚫 Non-Goals
+
+- ❌ Kein Full-Compliance oder Policy-as-Code Framework
+- ❌ Keine Änderungen an AWS-Ressourcen (read-only by design)
+- ❌ Fokus auf high-signal Fehlkonfigurationen, nicht auf Vollständigkeit
+
+---
+
+## 📌 Roadmap
+
+- [x] IAM/S3/EC2/CloudFront/Tagging Checks
+- [x] Multi-Region Support
+- [x] Severity-basierte Exit Codes
+- [x] JSON/MD/HTML Output
+- [ ] `--mask` Mode zum Anonymisieren von IDs
+- [ ] Erweiterte IAM Policy Analyse
+- [ ] Root Account MFA Check
+- [ ] AWS Organizations Support
+
+---
 
 ## 📄 License
-MIT
+
+[MIT](LICENSE) © 2025
+
+---
+
+<p align="center">
+  <sub>Built with ❤️ as a practical security-focused Python project demonstrating AWS API usage, CLI design, and CI-friendly tooling.</sub>
+</p>

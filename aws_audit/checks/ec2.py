@@ -27,14 +27,15 @@ def check_ec2_open_admin_ports(ses, region: str) -> CheckResult:
                     for port, label in ADMIN_PORTS.items():
                         if from_p <= port <= to_p:
                             for ipr in perm.get("IpRanges", []):
-                                if ipr.get("CidrIp") == "0.0.0.0/0":
+                                cidr = ipr.get("CidrIp")
+                                if cidr == "0.0.0.0/0":
                                     findings.append(
                                         Finding(
                                             service="ec2",
                                             resource_id=sgid,
                                             title=f"Security group allows {label} from 0.0.0.0/0",
                                             severity=Severity.HIGH,
-                                            detail=f"{sgid} allows {label} (port {port}) from the internet.",
+                                            detail=f"{sgid} allows {label} (port {port}) from {cidr}.",
                                             recommendation="Restrict inbound rules to trusted IP ranges or use SSM/bastion.",
                                             metadata={
                                                 "region": region,
