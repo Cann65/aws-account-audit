@@ -1,10 +1,10 @@
 # 🛡️ AWS Account Hygiene & Security Report
 
-> **Schnelle Sicherheits- und Hygiene-Checks für AWS-Accounts – ohne Compliance-Overhead.**
+> **Leichtgewichtiger Security-Scanner für AWS – ein Befehl, sofort Ergebnisse.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![AWS](https://img.shields.io/badge/AWS-232F3E?logo=amazonwebservices&logoColor=white)](https://aws.amazon.com/)
 
 Python-CLI, die ein AWS-Konto auf gängige Hygiene- und Sicherheitsprobleme scannt und JSON-, Markdown- und HTML-Reports mit Severity-Scoring und Remediation-Hinweisen erstellt. Läuft lokal oder in CI mit klaren Exit-Codes. Ziel: schnelle Sichtbarkeit auf High-Impact-Fehlkonfigurationen ohne Full-Compliance-Tooling.
 
@@ -43,7 +43,7 @@ Python-CLI, die ein AWS-Konto auf gängige Hygiene- und Sicherheitsprobleme scan
 
 ## 🖼️ Example Output
 
-![AWS Audit HTML Report](docs/screenshots/report-example.png)
+![AWS Audit HTML Report](docs/screenshots/aws-audit-html-report.png)
 
 _Generiert gegen ein echtes AWS-Konto (Identifier anonymisiert)._
 
@@ -251,7 +251,6 @@ Empfohlene Minimal-Berechtigungen (read-only):
 # Lint & Format
 ruff check . --fix
 ruff format .
-black .
 
 # Tests
 pytest -q
@@ -274,7 +273,7 @@ Beiträge sind willkommen! So kannst du mitmachen:
 
 ### Guidelines
 
-- Code muss `ruff` und `black` Checks bestehen
+- Code muss `ruff` Checks bestehen
 - Neue Features sollten Tests haben
 - Dokumentation aktualisieren wenn nötig
 
