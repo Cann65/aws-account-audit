@@ -155,7 +155,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::123456789012:role/AuditRole
+          role-to-assume: arn:aws:iam::<ACCOUNT_ID>:role/AuditRole
           aws-region: eu-central-1
 
       - name: Run audit
@@ -185,9 +185,9 @@ jobs:
   "id": "iam-001",
   "title": "IAM User without MFA",
   "severity": "HIGH",
-  "resource": "arn:aws:iam::123456789012:user/developer",
+  "resource": "arn:aws:iam::<ACCOUNT_ID>:user/<USERNAME>",
   "region": "global",
-  "description": "User 'developer' has console access but no MFA device configured.",
+  "description": "User has console access but no MFA device configured.",
   "remediation": "Enable MFA for this user via IAM Console or CLI.",
   "documentation": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa.html"
 }
@@ -197,9 +197,9 @@ jobs:
 
 ```json
 {
-  "account_id": "123456789012",
-  "scan_time": "2025-01-15T10:30:00Z",
-  "regions_scanned": ["eu-central-1", "eu-west-1"],
+  "account_id": "<ACCOUNT_ID>",
+  "scan_time": "<TIMESTAMP>",
+  "regions_scanned": ["<REGION_1>", "<REGION_2>"],
   "summary": {
     "CRITICAL": 0,
     "HIGH": 3,
