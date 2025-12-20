@@ -1,5 +1,9 @@
 # 🛡️ AWS Account Hygiene & Security Report
 
+| License | Python | UI | Cloud/Security |
+|---------|--------|----|----------------|
+| MIT     | 3.10+  | CLI (reports in HTML/MD/JSON) | AWS hygiene & security checks (boto3) |
+
 Python CLI that scans an AWS account for common hygiene and security issues and produces JSON, Markdown, and HTML reports with severity scoring and remediation hints. Designed to run locally or in CI with clear exit codes. The goal is fast visibility into high-impact misconfigurations without requiring full compliance tooling.
 
 ## 🔍 What it does
