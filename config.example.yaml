@@ -1,0 +1,11 @@
+profile: default
+region: eu-central-1
+# optional: regions: ["eu-central-1", "eu-west-1"] or ["all"]
+formats: ["json", "md", "html"]
+output_dir: out
+tag_keys: ["Owner", "Env"]
+fail_on_severity: MEDIUM
+exit_on_findings: true
+max_findings: null
+access_key_max_age_days: 90
+access_key_inactive_days: 90

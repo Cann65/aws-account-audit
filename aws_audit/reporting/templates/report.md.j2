@@ -1,0 +1,33 @@
+# AWS Account Hygiene & Security Report
+
+**Account:** {{ account_id }}
+**Regions:** {{ regions | join(", ") }}
+
+## Summary
+- Total findings: {{ summary.total }}
+- Worst severity: {{ summary.worst }}
+- Counts: {{ summary.counts }}
+
+### Per Service
+{% for service, count in service_counts.items() %}
+- {{ service | upper }}: {{ count }}
+{% endfor %}
+
+### Check Warnings / Partial
+{% for c in checks %}
+{% if c.warnings or c.skipped %}
+- {{ c.service }} / {{ c.name }}: {% if c.skipped %}skipped or partial. {% endif %}{% if c.warnings %}Warnings: {{ c.warnings | join("; ") }}{% endif %}
+{% endif %}
+{% endfor %}
+
+## Findings
+{% for f in findings %}
+### [{{ f.severity.name }}] {{ f.service | upper }} — {{ f.title }}
+- Resource: `{{ f.resource_id }}`
+- Detail: {{ f.detail }}
+- Recommendation: {{ f.recommendation }}
+{% if f.metadata %}
+- Metadata: {{ f.metadata }}
+{% endif %}
+
+{% endfor %}

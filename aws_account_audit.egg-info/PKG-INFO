@@ -1,0 +1,15 @@
+Metadata-Version: 2.4
+Name: aws-account-audit
+Version: 0.1.0
+Summary: AWS hygiene & security audit tool producing JSON/MD/HTML reports
+Requires-Python: >=3.10
+Requires-Dist: boto3>=1.34
+Requires-Dist: PyYAML>=6.0
+Requires-Dist: Jinja2>=3.1
+Requires-Dist: python-dotenv>=1.0
+Requires-Dist: rich>=13.7
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+Requires-Dist: moto>=5.0; extra == "dev"
+Requires-Dist: ruff>=0.6; extra == "dev"
+Requires-Dist: black>=24.0; extra == "dev"

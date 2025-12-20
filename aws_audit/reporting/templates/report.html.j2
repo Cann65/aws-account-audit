@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>AWS Audit Report</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; }
+    .meta { color: #444; }
+    .badge { padding: 2px 8px; border-radius: 10px; font-size: 12px; border: 1px solid #ddd; }
+    .finding { border: 1px solid #eee; border-radius: 12px; padding: 12px 14px; margin: 12px 0; }
+    code { background: #f6f6f6; padding: 2px 6px; border-radius: 6px; }
+    .sev-CRITICAL, .sev-HIGH { border-left: 6px solid #b00020; }
+    .sev-MEDIUM { border-left: 6px solid #f0a500; }
+    .sev-LOW, .sev-INFO { border-left: 6px solid #2d6cdf; }
+    table { border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #e0e0e0; padding: 6px 10px; text-align: left; }
+    th { background: #fafafa; }
+    .chip { display: inline-block; background: #f1f1f1; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 6px; }
+  </style>
+</head>
+<body>
+  <h1>AWS Account Hygiene &amp; Security Report</h1>
+  <p class="meta"><b>Account:</b> {{ account_id }} &nbsp; | &nbsp; <b>Regions:</b> {{ regions | join(", ") }}</p>
+
+  <h2>Summary</h2>
+  <ul>
+    <li>Total findings: {{ summary.total }}</li>
+    <li>Worst severity: {{ summary.worst }}</li>
+  </ul>
+  <table>
+    <tr>
+      <th>Severity</th>
+      {% for sev, cnt in summary.counts.items() %}
+      <th>{{ sev }}</th>
+      {% endfor %}
+    </tr>
+    <tr>
+      <td>Counts</td>
+      {% for sev, cnt in summary.counts.items() %}
+      <td>{{ cnt }}</td>
+      {% endfor %}
+    </tr>
+  </table>
+
+  <h3>Per Service</h3>
+  <div>
+    {% for service, count in service_counts.items() %}
+      <span class="chip">{{ service | upper }}: {{ count }}</span>
+    {% endfor %}
+  </div>
+
+  <h3>Check Warnings / Partial</h3>
+  <ul>
+    {% for c in checks %}
+      {% if c.warnings or c.skipped %}
+        <li><b>{{ c.service }}</b> / {{ c.name }} — {% if c.skipped %}skipped or partial. {% endif %}{% if c.warnings %}Warnings: {{ c.warnings | join("; ") }}{% endif %}</li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+
+  <h2>Findings</h2>
+  {% for f in findings %}
+    <div class="finding sev-{{ f.severity.name }}">
+      <div>
+        <span class="badge">{{ f.severity.name }}</span>
+        <b>{{ f.service | upper }}</b> — {{ f.title }}
+      </div>
+      <div style="margin-top:8px;"><b>Resource:</b> <code>{{ f.resource_id }}</code></div>
+      <div style="margin-top:8px;"><b>Detail:</b> {{ f.detail }}</div>
+      <div style="margin-top:8px;"><b>Recommendation:</b> {{ f.recommendation }}</div>
+      {% if f.metadata %}
+        <details style="margin-top:8px;">
+          <summary>Metadata</summary>
+          <pre>{{ f.metadata }}</pre>
+        </details>
+      {% endif %}
+    </div>
+  {% endfor %}
+</body>
+</html>
