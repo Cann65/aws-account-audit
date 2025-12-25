@@ -4,21 +4,22 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
-[![AWS](https://img.shields.io/badge/AWS-232F3E?logo=amazonwebservices&logoColor=white)](https://aws.amazon.com/)
+[![AWS](https://img.shields.io/badge/AWS-232F3E?logo=amazonwebservices\&logoColor=white)](https://aws.amazon.com/)
 [![Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
-A Python CLI that scans your AWS account for common hygiene and security issues, generating JSON, Markdown, and HTML reports with severity scoring and remediation guidance.
+A Python CLI that scans your AWS account for common hygiene and security issues, generating **JSON**, **Markdown**, and **HTML** reports with severity scoring and remediation guidance.
 
-**TL;DR:**
+**TL;DR**
+
 ```bash
 pip install -e .
 python -m aws_audit --profile my-profile --regions all --format html
 # → Open out/aws_audit_<account>.html
 ```
 
-⚡ **Fast** — Full scan in under 2 minutes  
-🔒 **Read-only** — No modifications to your AWS resources, ever  
-🚦 **CI-friendly** — Exit codes for automated quality gates  
+⚡ **Fast** — typically seconds to a few minutes (depending on account size)
+🔒 **Read-only** — no modifications to your AWS resources, ever
+🚦 **CI-friendly** — exit codes for automated quality gates
 
 ---
 
@@ -26,83 +27,91 @@ python -m aws_audit --profile my-profile --regions all --format html
 
 There are excellent full-featured security scanners out there (Prowler, ScoutSuite, AWS Config Rules). So why another one?
 
-| Tool | Strengths | Trade-offs |
-|------|-----------|------------|
-| **Prowler** | 300+ checks, CIS/PCI compliance | Complex setup, long scan times, noisy output |
-| **ScoutSuite** | Multi-cloud, comprehensive | Heavy dependencies, steep learning curve |
-| **AWS Config** | Native, continuous monitoring | Costs money, requires setup per account |
-| **This tool** | Fast, focused, zero config | Limited scope (by design) |
+| Tool           | Strengths                       | Trade-offs                                   |
+| -------------- | ------------------------------- | -------------------------------------------- |
+| **Prowler**    | 300+ checks, CIS/PCI compliance | Complex setup, long scan times, noisy output |
+| **ScoutSuite** | Multi-cloud, comprehensive      | Heavy dependencies, steep learning curve     |
+| **AWS Config** | Native, continuous monitoring   | Costs money, requires setup per account      |
+| **This tool**  | Fast, focused, zero config      | Limited scope (by design)                    |
 
 **This tool is for you if:**
-- ✅ You want a quick health check in under 2 minutes
-- ✅ You need CI-friendly exit codes for automated gates
-- ✅ You prefer actionable findings over compliance checklists
-- ✅ You're onboarding a new AWS account and want a baseline
+
+* ✅ You want a quick health check
+* ✅ You need CI-friendly exit codes for automated gates
+* ✅ You prefer actionable findings over compliance checklists
+* ✅ You're onboarding a new AWS account and want a baseline
 
 **This tool is NOT for you if:**
-- ❌ You need full CIS/SOC2/PCI compliance reporting
-- ❌ You want continuous monitoring (use AWS Config or GuardDuty)
-- ❌ You need deep IAM policy analysis (use IAM Access Analyzer)
+
+* ❌ You need full CIS/SOC2/PCI compliance reporting
+* ❌ You want continuous monitoring (use AWS Config or GuardDuty)
+* ❌ You need deep IAM policy analysis (use IAM Access Analyzer)
 
 ---
 
 ## 📑 Table of Contents
 
-- [Why This Tool?](#-why-this-tool)
-- [Features](#-features)
-- [Example Output](#-example-output)
-- [Quickstart](#-quickstart)
-- [How It Works](#-how-it-works)
-- [CLI Reference](#-cli-reference)
-- [Severity Levels](#-severity-levels)
-- [Exit Codes](#-exit-codes)
-- [CI/CD Integration](#-cicd-integration)
-- [Output Examples](#-output-examples)
-- [Required Permissions](#-required-permissions)
-- [Troubleshooting](#-troubleshooting)
-- [Performance](#-performance)
-- [Development](#-development)
-- [Contributing](#-contributing)
-- [Non-Goals](#-non-goals)
-- [Roadmap](#-roadmap)
-- [License](#-license)
+* [Features](#-features)
+* [Example Output](#-example-output)
+* [Quickstart](#-quickstart)
+* [How It Works](#-how-it-works)
+* [CLI Reference](#-cli-reference)
+* [Severity Levels](#-severity-levels)
+* [Exit Codes](#-exit-codes)
+* [CI/CD Integration](#-cicd-integration)
+* [Output Examples](#-output-examples)
+* [Required Permissions](#-required-permissions)
+* [Troubleshooting](#-troubleshooting)
+* [Performance](#-performance)
+* [Development](#-development)
+* [Contributing](#-contributing)
+* [Non-Goals](#-non-goals)
+* [Roadmap](#-roadmap)
+* [License](#-license)
 
 ---
 
 ## 🔍 Features
 
 ### IAM Security
-| Check | Severity | Why It Matters |
-|-------|----------|----------------|
-| Users without MFA | HIGH | Compromised passwords = full account access |
-| Access keys older than 90 days | MEDIUM | Long-lived credentials increase breach window |
-| Unused access keys (30+ days) | LOW | Forgotten keys are attack vectors |
-| Overly permissive policies (`*:*`) | HIGH | Violates least-privilege principle |
+
+| Check                              | Severity | Why It Matters                                |
+| ---------------------------------- | -------- | --------------------------------------------- |
+| Users without MFA                  | HIGH     | Compromised passwords = full account access   |
+| Access keys older than 90 days     | MEDIUM   | Long-lived credentials increase breach window |
+| Unused access keys (30+ days)      | LOW      | Forgotten keys are attack vectors             |
+| Overly permissive policies (`*:*`) | HIGH     | Violates least-privilege principle            |
 
 ### S3 Security
-| Check | Severity | Why It Matters |
-|-------|----------|----------------|
-| Account public access block disabled | HIGH | Last line of defense against accidental exposure |
-| Bucket-level public access | CRITICAL | Data breaches waiting to happen |
+
+| Check                                | Severity | Why It Matters                                   |
+| ------------------------------------ | -------- | ------------------------------------------------ |
+| Account public access block disabled | HIGH     | Last line of defense against accidental exposure |
+| Bucket-level public access           | CRITICAL | Data breaches waiting to happen                  |
 
 ### EC2 / Network Security
-| Check | Severity | Why It Matters |
-|-------|----------|----------------|
-| Security groups open on port 22 (SSH) | HIGH | Brute-force attacks, unauthorized access |
-| Security groups open on port 3389 (RDP) | HIGH | Common ransomware entry point |
+
+| Check                                   | Severity | Why It Matters                           |
+| --------------------------------------- | -------- | ---------------------------------------- |
+| Security groups open on port 22 (SSH)   | HIGH     | Brute-force attacks, unauthorized access |
+| Security groups open on port 3389 (RDP) | HIGH     | Common ransomware entry point            |
 
 ### CloudFront
-| Check | Severity | Why It Matters |
-|-------|----------|----------------|
-| HTTP allowed (no HTTPS redirect) | MEDIUM | Man-in-the-middle attacks, data interception |
+
+| Check                            | Severity | Why It Matters                               |
+| -------------------------------- | -------- | -------------------------------------------- |
+| HTTP allowed (no HTTPS redirect) | MEDIUM   | Man-in-the-middle attacks, data interception |
 
 ### Resource Hygiene
-| Check | Severity | Why It Matters |
-|-------|----------|----------------|
-| Missing required tags (`Owner`, `Env`) | INFO | Cost allocation, incident response, accountability |
+
+| Check                                  | Severity | Why It Matters                                     |
+| -------------------------------------- | -------- | -------------------------------------------------- |
+| Missing required tags (`Owner`, `Env`) | INFO     | Cost allocation, incident response, accountability |
 
 ### Multi-Region Support
+
 Scan a single region, multiple regions, or all regions:
+
 ```bash
 --region eu-central-1                       # Single region
 --regions eu-central-1,eu-west-1,us-east-1  # Multiple regions
@@ -117,29 +126,30 @@ Scan a single region, multiple regions, or all regions:
 
 *Generated against a real AWS account (identifiers anonymized).*
 
+> If the image doesn’t render: verify the file exists and is committed at `docs/screenshots/aws-audit-html-report.png`.
+
 ---
 
 ## 🚀 Quickstart
 
 ### Prerequisites
 
-- Python 3.10+
-- AWS CLI configured (SSO or access keys)
-- Read permissions for the services being scanned ([see IAM policy](#-required-permissions))
+* Python 3.10+
+* AWS CLI configured (SSO or access keys)
+* Read permissions for the services being scanned ([see IAM policy](#-required-permissions))
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/Cann65/aws-account-audit.git
 cd aws-account-audit
 
-# Create virtual environment
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-# Install
-pip install -e ".[dev]"
+pip install -e "\[dev]"  # optional; use only if you have extras defined
+# If you don’t have extras, use:
+# pip install -e .
 ```
 
 ### First Scan
@@ -164,7 +174,8 @@ python -m aws_audit \
 ```
 
 Reports are written to `out/`:
-```
+
+```text
 out/
 ├── aws_audit_123456789012.json
 ├── aws_audit_123456789012.md
@@ -175,73 +186,69 @@ out/
 
 ## ⚙️ How It Works
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                         aws-audit CLI                           │
 ├─────────────────────────────────────────────────────────────────┤
 │  1. Authenticate    → AWS credential chain (SSO/keys/role)      │
 │  2. Discover        → List enabled regions (if --regions all)   │
-│  3. Scan            → Run checks in parallel per service        │
+│  3. Scan            → Run checks per service (paginators used)  │
 │  4. Aggregate       → Collect findings, dedupe, assign severity │
 │  5. Report          → Generate JSON/MD/HTML output              │
 │  6. Exit            → Return code based on --fail-on threshold  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Key design decisions:**
-- **Read-only**: No modifications to your AWS resources, ever
-- **Parallel scanning**: Services are scanned concurrently for speed
-- **Graceful degradation**: Missing permissions skip checks (with warnings), don't fail
-- **Deterministic output**: Same input = same output (for diffing over time)
+**Key design decisions**
+
+* **Read-only**: no modifications to AWS resources
+* **Graceful degradation**: missing permissions skip checks (with warnings)
+* **Deterministic output**: same input = same output (useful for diffing)
 
 ---
 
 ## ⚙️ CLI Reference
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--profile` | — | AWS CLI profile name |
-| `--region` | — | Primary region for global resources |
-| `--regions` | — | Regions to scan: `eu-central-1,us-east-1` or `all` |
-| `--format` | `json` | Output format(s): `json`, `md`, `html` (repeatable) |
-| `--fail-on` | `MEDIUM` | Minimum severity to trigger exit code 2 |
-| `--max-findings` | — | Maximum findings before exit code 2 |
-| `--no-exit-on-findings` | `false` | Always exit 0 regardless of findings |
-| `--access-key-max-age-days` | `90` | Age threshold for access key rotation warnings |
-| `--access-key-inactive-days` | `30` | Inactivity threshold for unused key warnings |
-| `--required-tags` | `Owner,Env` | Comma-separated list of required tags |
-| `--output-dir` | `out/` | Directory for report files |
+| Flag                         | Default     | Description                                         |
+| ---------------------------- | ----------- | --------------------------------------------------- |
+| `--profile`                  | —           | AWS CLI profile name                                |
+| `--region`                   | —           | Primary region                                      |
+| `--regions`                  | —           | Regions to scan: `eu-central-1,us-east-1` or `all`  |
+| `--format`                   | `json`      | Output format(s): `json`, `md`, `html` (repeatable) |
+| `--fail-on`                  | `MEDIUM`    | Minimum severity to trigger exit code 2             |
+| `--max-findings`             | —           | Maximum findings before exit code 2                 |
+| `--no-exit-on-findings`      | `false`     | Always exit 0 regardless of findings                |
+| `--access-key-max-age-days`  | `90`        | Access key age threshold                            |
+| `--access-key-inactive-days` | `30`        | Inactivity threshold for unused keys                |
+| `--required-tags`            | `Owner,Env` | Comma-separated list of required tags               |
+| `--output-dir`               | `out/`      | Directory for report files                          |
 
 ---
 
 ## 🎯 Severity Levels
 
-| Level | Meaning | Example | Action |
-|-------|---------|---------|--------|
-| **CRITICAL** | Immediate risk of data breach or compromise | Public S3 bucket with sensitive data | Fix within hours |
-| **HIGH** | Significant security gap, likely exploitable | IAM user without MFA, open SSH to world | Fix within days |
-| **MEDIUM** | Security weakness, not immediately exploitable | Old access keys, missing HTTPS | Fix within weeks |
-| **LOW** | Minor issue, defense-in-depth concern | Unused credentials, suboptimal config | Fix when convenient |
-| **INFO** | Informational, best practice recommendation | Missing tags, documentation gaps | Nice to have |
+| Level        | Meaning                                      | Example              | Action                  |
+| ------------ | -------------------------------------------- | -------------------- | ----------------------- |
+| **CRITICAL** | Immediate risk of data breach or compromise  | Public S3 bucket     | Fix within hours        |
+| **HIGH**     | Significant security gap, likely exploitable | IAM user without MFA | Fix within days         |
+| **MEDIUM**   | Security weakness                            | Old access keys      | Fix within weeks        |
+| **LOW**      | Minor issue                                  | Unused credentials   | Fix when convenient     |
+| **INFO**     | Best-practice signal                         | Missing tags         | Operational improvement |
 
 ---
 
 ## ✅ Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| `0` | Success, or all findings below `--fail-on` threshold |
-| `2` | Findings at or above `--fail-on` severity |
+| Code | Meaning                                              |
+| ---- | ---------------------------------------------------- |
+| `0`  | Success, or all findings below `--fail-on` threshold |
+| `2`  | Findings at or above `--fail-on` severity            |
 
-**Examples:**
+Examples:
+
 ```bash
-# Fail CI only on CRITICAL or HIGH findings
 python -m aws_audit --fail-on HIGH
-
-# Never fail CI (reporting only)
 python -m aws_audit --no-exit-on-findings
-
-# Fail if more than 10 findings of any severity
 python -m aws_audit --max-findings 10
 ```
 
@@ -269,7 +276,7 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write   # Required for OIDC
+      id-token: write
       contents: read
 
     steps:
@@ -310,7 +317,7 @@ jobs:
         if: always()
         run: |
           echo "## 🛡️ Security Audit Results" >> $GITHUB_STEP_SUMMARY
-          cat out/aws_audit_*.md >> $GITHUB_STEP_SUMMARY
+          ls -1 out/aws_audit_*.md | head -n 1 | xargs -I{} cat {} >> $GITHUB_STEP_SUMMARY
 ```
 
 ### GitLab CI
@@ -346,7 +353,7 @@ security-audit:
   "resource": "arn:aws:iam::123456789012:user/deploy-bot",
   "region": "global",
   "description": "User has console access but no MFA device configured. This allows password-only authentication, which is vulnerable to credential theft.",
-  "remediation": "Enable MFA for this user via the IAM Console or CLI: aws iam enable-mfa-device",
+  "remediation": "Enable MFA for this user via the IAM Console.",
   "documentation": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa.html",
   "tags": ["iam", "mfa", "authentication"]
 }
@@ -377,30 +384,43 @@ security-audit:
 
 ## 🔐 Required Permissions
 
-### Minimal IAM Policy
+### Minimal IAM Policy (verified)
+
+The policy below is derived from the tool’s **actual boto3 calls and paginator operations** (verified via extracted `CALL` / `PAGINATOR` output). It intentionally avoids unused permissions (e.g. `s3:GetBucketAcl`).
 
 ```json
 {
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "AuditReadOnly",
+      "Sid": "AwsAccountAuditReadOnlyMinimal",
       "Effect": "Allow",
       "Action": [
-        "iam:List*",
-        "iam:Get*",
-        "s3:GetAccountPublicAccessBlock",
-        "s3:GetBucketPolicy",
-        "s3:GetBucketPolicyStatus",
-        "s3:GetBucketPublicAccessBlock",
-        "s3:GetBucketAcl",
-        "s3:ListAllMyBuckets",
-        "ec2:DescribeSecurityGroups",
+        "sts:GetCallerIdentity",
+
         "ec2:DescribeRegions",
-        "cloudfront:ListDistributions",
-        "cloudfront:GetDistribution",
+        "ec2:DescribeSecurityGroups",
+
         "resourcegroupstaggingapi:GetResources",
-        "sts:GetCallerIdentity"
+
+        "cloudfront:ListDistributions",
+
+        "s3:ListAllMyBuckets",
+        "s3:GetAccountPublicAccessBlock",
+        "s3:GetBucketPublicAccessBlock",
+        "s3:GetBucketPolicyStatus",
+
+        "iam:ListUsers",
+        "iam:ListRoles",
+        "iam:ListMFADevices",
+        "iam:ListAccessKeys",
+        "iam:GetAccessKeyLastUsed",
+        "iam:ListAttachedUserPolicies",
+        "iam:ListUserPolicies",
+        "iam:GetUserPolicy",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListRolePolicies",
+        "iam:GetRolePolicy"
       ],
       "Resource": "*"
     }
@@ -410,11 +430,12 @@ security-audit:
 
 ### Using AWS Managed Policies
 
-Alternatively, attach these managed policies:
-- `arn:aws:iam::aws:policy/SecurityAudit` (broader, but convenient)
-- `arn:aws:iam::aws:policy/ReadOnlyAccess` (very broad, not recommended)
+Alternatively, attach these managed policies (broader, convenient but not recommended in production):
 
-> **Note:** Missing permissions result in skipped checks with warnings, not failures.
+* `arn:aws:iam::aws:policy/SecurityAudit`
+* `arn:aws:iam::aws:policy/ReadOnlyAccess`
+
+> Prefer a dedicated read-only role with the minimal policy above; avoid broad policies in production environments.
 
 ---
 
@@ -423,165 +444,83 @@ Alternatively, attach these managed policies:
 ### Authentication Issues
 
 **Problem:** `NoCredentialsError: Unable to locate credentials`
+
 ```bash
-# Check current identity
 aws sts get-caller-identity
-
-# If using SSO, ensure you're logged in
 aws sso login --profile my-profile
-
-# Verify profile exists
-cat ~/.aws/config | grep -A5 "\[profile my-profile\]"
 ```
 
 **Problem:** `ExpiredTokenException: The security token included in the request is expired`
+
 ```bash
-# Re-authenticate
 aws sso login --profile my-profile
-# Or refresh credentials
-aws sts get-session-token
 ```
 
 ### Permission Issues
 
 **Problem:** `AccessDenied` on specific checks
+
 ```bash
-# Run with verbose output to see which checks are skipped
 python -m aws_audit --profile my-profile --region eu-central-1 -v
-
-# Check what permissions your role has
-aws iam simulate-principal-policy \
-  --policy-source-arn arn:aws:iam::123456789012:role/MyRole \
-  --action-names s3:GetAccountPublicAccessBlock
 ```
-
-### Region Issues
-
-**Problem:** `Could not connect to the endpoint URL`
-```bash
-# Check if region is enabled
-aws ec2 describe-regions --query "Regions[].RegionName" --output table
-
-# Some regions require opt-in
-aws account get-region-opt-status --region-name af-south-1
-```
-
-### Report Generation Issues
-
-**Problem:** HTML report not rendering correctly
-- Ensure you're opening the file in a modern browser
-- Check that the `out/` directory has write permissions
-- Try regenerating with `--format html` only
 
 ---
 
 ## ⚡ Performance
 
-Scan duration and API calls vary based on account size, number of resources, and regions scanned.
+Scan duration varies based on account size, number of resources, and regions scanned.
 
 **Rough estimates (small to medium accounts):**
 
-| Scope | Duration |
-|-------|----------|
-| Single region, all checks | ~15–30 seconds |
-| All regions (~20), all checks | ~2–5 minutes |
-| IAM-only (global) | ~5–10 seconds |
+| Scope                         | Duration       |
+| ----------------------------- | -------------- |
+| Single region, all checks     | ~15–30 seconds |
+| All regions (~20), all checks | ~2–5 minutes   |
+| IAM-only (global)             | ~5–10 seconds  |
 
-**Tips for faster scans:**
-- Use `--regions` to limit scope instead of `all`
-- Run during off-peak hours to avoid throttling
+Tips:
 
-**Rate Limits:**
-- The tool uses exponential backoff to handle AWS throttling
-- For very large accounts (1000+ users, 100+ buckets), expect longer scan times
+* Use `--regions` to limit scope instead of `all`
+* Run during off-peak hours to avoid throttling
 
 ---
 
 ## 🧪 Development
-
-### Setup
 
 ```bash
 git clone https://github.com/Cann65/aws-account-audit.git
 cd aws-account-audit
 python -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e .
 ```
 
-### Code Quality
+Code quality:
 
 ```bash
-# Lint and auto-fix
 ruff check . --fix
-
-# Format
 ruff format .
-
-# Type checking
 mypy aws_audit/
-
-# All checks (pre-commit)
-pre-commit run --all-files
 ```
 
-### Testing
+Tests:
 
 ```bash
-# Unit tests (no AWS credentials needed)
-pytest tests/unit -v
-
-# Integration tests (requires AWS credentials)
-pytest tests/integration -v --profile test-account
-
-# Coverage report
-pytest --cov=aws_audit --cov-report=html
-open htmlcov/index.html
+pytest -q
 ```
-
-### Adding a New Check
-
-1. Create a new checker in `aws_audit/checks/`
-2. Implement the `Check` protocol (see existing checks for examples)
-3. Register the check in `aws_audit/checks/__init__.py`
-4. Add tests in `tests/unit/checks/`
-5. Update documentation
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Here's how to get started:
+Contributions are welcome!
 
-1. **Fork** the repository
-2. **Create a branch**: `git checkout -b feature/my-feature`
-3. **Make changes** and add tests
-4. **Run checks**: `ruff check . && pytest`
-5. **Commit**: `git commit -m 'Add: Description of change'`
-6. **Push**: `git push origin feature/my-feature`
-7. **Open a Pull Request**
-
-### Commit Message Format
-
-```
-<type>: <description>
-
-Types:
-- Add: New feature
-- Fix: Bug fix
-- Docs: Documentation changes
-- Refactor: Code changes that don't add features or fix bugs
-- Test: Adding or updating tests
-- Chore: Maintenance tasks
-```
-
-### What We're Looking For
-
-- New security checks (with clear rationale)
-- Performance improvements
-- Better error messages
-- Documentation improvements
-- Bug fixes with regression tests
+1. Fork the repository
+2. Create a branch: `git checkout -b feature/my-feature`
+3. Make changes and add tests
+4. Run checks: `ruff check . && pytest`
+5. Commit and push
+6. Open a Pull Request
 
 ---
 
@@ -589,37 +528,26 @@ Types:
 
 This tool intentionally does NOT:
 
-- ❌ **Modify AWS resources** — Read-only by design, no auto-remediation
-- ❌ **Replace compliance frameworks** — Use Prowler/Config for CIS, SOC2, PCI
-- ❌ **Provide continuous monitoring** — Point-in-time scan, not a daemon
-- ❌ **Cover all AWS services** — Focused on high-impact basics
-- ❌ **Support multi-account** — One account at a time (use AWS Organizations tools for fleet)
+* ❌ Modify AWS resources — read-only by design, no auto-remediation
+* ❌ Replace compliance frameworks — use Prowler/Config for CIS, SOC2, PCI
+* ❌ Provide continuous monitoring — point-in-time scan, not a daemon
+* ❌ Cover all AWS services — focused on high-impact basics
+* ❌ Support multi-account — one account at a time
 
 ---
 
 ## 📌 Roadmap
 
-### Completed
-- [x] Core checks: IAM, S3, EC2, CloudFront, Tagging
-- [x] Multi-region support
-- [x] Severity-based exit codes
-- [x] JSON / Markdown / HTML output
-
 ### Planned
-- [ ] `--mask` mode for anonymizing identifiers in reports
-- [ ] Root account MFA check
-- [ ] Extended IAM policy analysis (unused permissions)
-- [ ] RDS public accessibility check
-- [ ] EBS encryption check
-- [ ] Lambda public URL check
-- [ ] AWS Organizations multi-account support
-- [ ] SARIF output for GitHub Security tab integration
-- [ ] Slack/Teams webhook notifications
 
-### Maybe Someday
-- [ ] Web UI for browsing historical reports
-- [ ] Terraform/CloudFormation remediation snippets
-- [ ] Custom check plugins
+* [ ] `--mask` mode for anonymizing identifiers in reports
+* [ ] Root account MFA check
+* [ ] Extended IAM policy analysis (unused permissions)
+* [ ] RDS public accessibility check
+* [ ] EBS encryption check
+* [ ] Lambda public URL check
+* [ ] AWS Organizations multi-account support
+* [ ] SARIF output for GitHub Security tab integration
 
 ---
 
